@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-black text-stone-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hall of Quote</title>
+    <!-- Tailwind CSS v4 -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 50% 50%, #121212 0%, #050505 100%);
+            overflow-x: hidden;
+        }
+        .serif-quote {
+            font-family: 'Playfair Display', serif;
+            text-shadow: 0 0 40px rgba(255,255,255,0.03);
+        }
+        .fade-in {
+            animation: fadeIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); filter: blur(4px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col justify-between antialiased selection:bg-stone-800 selection:text-white relative">
+
+    <!-- HEADER OVERLAY -->
+    <header class="w-full px-8 py-8 flex justify-between items-center border-b border-stone-900/60 backdrop-blur-md z-10">
+        <div class="text-xs tracking-[0.4em] uppercase font-light text-stone-400">
+            The Hall <span class="text-stone-600">/ Of Quote</span>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2 hidden sm:flex">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div class="text-[10px] text-stone-500 tracking-[0.2em] uppercase font-medium">Base Live Connectée</div>
+            </div>
+            <button onclick="toggleDrawer(true)" class="cursor-pointer flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase font-light text-stone-400 hover:text-white border border-stone-800 hover:border-stone-600 px-4 py-2 rounded-full transition-all duration-300 bg-stone-950/50">
+                <span>+</span> Ajouter
+            </button>
+        </div>
+    </header>
+
+    <!-- IMMERSIVE MAIN DISPLAY -->
+    <main class="flex-1 w-full flex flex-col md:flex-row items-stretch relative">
+        
+        <!-- BOUTON PRÉCÉDENT -->
+        <button onclick="changeQuote('prev')" class="cursor-pointer order-2 md:order-1 w-full md:w-32 py-4 md:py-0 flex items-center justify-center border-t md:border-t-0 md:border-r border-stone-900/50 hover:bg-stone-950/40 text-stone-600 hover:text-stone-200 transition-all duration-500 group">
+            <div class="flex md:flex-col items-center gap-3 group-hover:-translate-x-1 md:group-hover:-translate-y-2 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                </svg>
+                <span class="text-[10px] tracking-[0.3em] uppercase font-light hidden md:block [writing-mode:vertical-lr] rotate-180">Précédent</span>
+            </div>
+        </button>
+
+        <!-- ZONE CENTRALE -->
+        <div class="flex-1 flex flex-col justify-center items-center px-6 py-12 md:py-0 order-1 md:order-2 max-w-7xl mx-auto w-full">
+            <div id="quoteContainer" class="fade-in w-full text-center space-y-12 md:space-y-16">
+                
+                <div class="inline-flex items-center gap-3">
+                    <span class="h-[1px] w-8 bg-stone-800"></span>
+                    <div id="quoteId" class="text-xs tracking-[0.3em] uppercase text-stone-500 font-light">Chargement...</div>
+                    <span class="h-[1px] w-8 bg-stone-800"></span>
+                </div>
+
+                <blockquote id="quoteText" class="serif-quote text-4xl md:text-6xl lg:text-7xl italic font-light leading-tight text-stone-100 max-w-5xl mx-auto min-h-[180px] flex items-center justify-center px-4">« ... »</blockquote>
+
+                <div class="space-y-3">
+                    <cite id="quoteAuthor" class="not-italic text-sm md:text-lg tracking-[0.2em] uppercase font-light text-stone-300 block">—</cite>
+                    <p id="quoteDate" class="text-xs text-stone-600 tracking-widest font-light"></p>
+                </div>
+
+                <div class="flex items-center justify-center gap-4 pt-4">
+                    <button onclick="toggleContext()" class="cursor-pointer bg-stone-950/80 hover:bg-stone-900 border border-stone-900 hover:border-stone-700 text-stone-400 hover:text-stone-200 px-6 py-3 rounded-full text-[11px] tracking-[0.15em] uppercase transition-all duration-300 backdrop-blur-sm">
+                        Contexte
+                    </button>
+                    
+                    <button onclick="vote()" id="voteBtn" class="cursor-pointer bg-stone-100 hover:bg-white text-black px-6 py-3 rounded-full text-[11px] tracking-[0.15em] uppercase font-medium transition-all duration-300 flex items-center gap-3 shadow-lg shadow-white/5">
+                        <span>Validé</span>
+                        <span id="voteCount" class="bg-stone-200 text-black px-2 py-0.5 rounded-full text-[10px] font-bold">0</span>
+                    </button>
+                </div>
+
+                <div id="contextBox" class="hidden max-w-xl mx-auto p-6 bg-stone-950/60 border border-stone-900/80 backdrop-blur-md rounded-xl text-left text-sm text-stone-400 font-light leading-relaxed">
+                    <span class="block text-[10px] uppercase tracking-[0.2em] font-medium text-stone-500 mb-3">Les coulisses de l'histoire</span>
+                    <span id="quoteContext" class="text-stone-300"></span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- BOUTON SUIVANT -->
+        <button onclick="changeQuote('next')" class="cursor-pointer order-3 w-full md:w-32 py-4 md:py-0 flex items-center justify-center border-t md:border-t-0 md:border-l border-stone-900/50 hover:bg-stone-100 text-stone-400 hover:text-black transition-all duration-500 group">
+            <div class="flex md:flex-col items-center gap-3 group-hover:translate-x-1 md:group-hover:translate-y-2 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+                <span class="text-[10px] tracking-[0.3em] uppercase font-light hidden md:block [writing-mode:vertical-lr]">Suivant</span>
+            </div>
+        </button>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full px-8 py-6 flex justify-between items-center border-t border-stone-900/60 text-[10px] text-stone-600 tracking-wider">
+        <div>© 2026 Légendes Urbaines.</div>
+        <div class="uppercase tracking-[0.2em] text-stone-500">Database Active</div>
+    </footer>
+
+    <!-- DRAWER FORMULAIRE -->
+    <div id="drawer" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-stone-950/95 border-l border-stone-900 backdrop-blur-xl z-50 translate-x-full transition-transform duration-500 ease-in-out p-8 flex flex-col justify-between">
+        <div>
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="text-xs tracking-[0.3em] uppercase text-stone-400 font-light">Nouvelle Archive</h3>
+                <button onclick="toggleDrawer(false)" class="cursor-pointer text-stone-600 hover:text-stone-300 text-sm tracking-widest uppercase">Fermer</button>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-stone-500 mb-2 font-medium">La Citation</label>
+                    <textarea id="formText" rows="3" placeholder="« Dis un truc (peu) intelligent... »" class="w-full bg-stone-900/50 border border-stone-800 rounded-lg p-3 text-sm text-stone-100 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-700"></textarea>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-stone-500 mb-2 font-medium">L'Auteur</label>
+                    <input id="formAuthor" type="text" placeholder="Jeanperdmachemise" class="w-full bg-stone-900/50 border border-stone-800 rounded-lg p-3 text-sm text-stone-100 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-700">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest text-stone-500 mb-2 font-medium">Le Contexte</label>
+                    <textarea id="formContext" rows="3" placeholder="Après le 4ème verre de rouge..." class="w-full bg-stone-900/50 border border-stone-800 rounded-lg p-3 text-sm text-stone-100 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-700"></textarea>
+                </div>
+                <button onclick="submitQuote()" class="cursor-pointer w-full bg-stone-100 hover:bg-white text-black py-3 rounded-lg text-xs tracking-widest uppercase font-medium transition-colors">
+                    Publier
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS FIREBASE (Modules v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8VPBZ_PWdV6Rzh1B8a7_l7kAgVzHmSYc",
+            authDomain: "hall-of-quote-5bcf7.firebaseapp.com",
+            projectId: "hall-of-quote-5bcf7",
+            storageBucket: "hall-of-quote-5bcf7.firebasestorage.app",
+            messagingSenderId: "812374672512",
+            appId: "1:812374672512:web:f89567d09288bef5069265",
+            measurementId: "G-FCBHEXV64Z"
+        };
+
+        // Initialisation
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const quotesCollection = collection(db, "quotes");
+
+        let quotesDatabase = [];
+        let currentIndex = 0;
+        let votedQuotes = new Set();
+
+        // Écouter les données en temps réel sur Firebase
+        const q = query(quotesCollection, orderBy("timestamp", "asc"));
+        onSnapshot(q, (snapshot) => {
+            quotesDatabase = [];
+            snapshot.forEach((doc) => {
+                quotesDatabase.push({ id_db: doc.id, ...doc.data() });
+            });
+
+            if (quotesDatabase.length > 0) {
+                // Si on charge pour la première fois ou si index invalide
+                if (currentIndex >= quotesDatabase.length) currentIndex = quotesDatabase.length - 1;
+                displayQuote(currentIndex);
+            } else {
+                document.getElementById('quoteId').innerText = "Vide";
+                document.getElementById('quoteText').innerText = "« Pas encore de citation. Cliquez sur + pour inaugurer le site ! »";
+            }
+        });
+
+        // Afficher une citation
+        window.displayQuote = function(index) {
+            if (quotesDatabase.length === 0) return;
+            const quote = quotesDatabase[index];
+            document.getElementById('contextBox').classList.add('hidden');
+            
+            document.getElementById('quoteId').innerText = `Archive #${String(index + 1).padStart(3, '0')}`;
+            document.getElementById('quoteText').innerText = quote.text;
+            document.getElementById('quoteAuthor').innerText = quote.author;
+            document.getElementById('quoteDate').innerText = quote.date;
+            document.getElementById('quoteContext').innerText = quote.context;
+            document.getElementById('voteCount').innerText = quote.votes || 0;
+
+            const btn = document.getElementById('voteBtn');
+            if (votedQuotes.has(quote.id_db)) {
+                btn.className = "bg-stone-900 text-stone-500 border border-stone-800 cursor-not-allowed px-6 py-3 rounded-full text-[11px] tracking-[0.15em] uppercase flex items-center gap-3";
+                btn.querySelector('span').innerText = 'Validé ✓';
+            } else {
+                btn.className = "cursor-pointer bg-stone-100 hover:bg-white text-black px-6 py-3 rounded-full text-[11px] tracking-[0.15em] uppercase font-medium transition-all duration-300 flex items-center gap-3";
+                btn.querySelector('span').innerText = 'Validé';
+            }
+        }
+
+        // Navigation
+        window.changeQuote = function(direction) {
+            if (quotesDatabase.length === 0) return;
+            const mainContent = document.getElementById('quoteContainer');
+            mainContent.style.opacity = 0;
+            
+            setTimeout(() => {
+                if (direction === 'next') {
+                    currentIndex = (currentIndex + 1) % quotesDatabase.length;
+                } else if (direction === 'prev') {
+                    currentIndex = (currentIndex - 1 + quotesDatabase.length) % quotesDatabase.length;
+                }
+                displayQuote(currentIndex);
+                mainContent.style.opacity = 1;
+            }, 200);
+        }
+
+        // Voter en base
+        window.vote = async function() {
+            if (quotesDatabase.length === 0) return;
+            const quote = quotesDatabase[currentIndex];
+            if (!votedQuotes.has(quote.id_db)) {
+                votedQuotes.add(quote.id_db);
+                const docRef = doc(db, "quotes", quote.id_db);
+                await updateDoc(docRef, {
+                    votes: increment(1)
+                });
+            }
+        }
+
+        // Envoyer une citation à Firebase
+        window.submitQuote = async function() {
+            const text = document.getElementById('formText').value;
+            const author = document.getElementById('formAuthor').value;
+            const context = document.getElementById('formContext').value || "Aucun détail compromettant.";
+
+            if (!text || !author) {
+                alert("La citation et l'auteur sont obligatoires.");
+                return;
+            }
+
+            const formatText = text.startsWith('«') ? text : `« ${text} »`;
+            const formatAuthor = author.startsWith('—') ? author : `— ${author}`;
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date().toLocaleDateString('fr-FR', options);
+
+            try {
+                await addDoc(quotesCollection, {
+                    text: formatText,
+                    author: formatAuthor,
+                    context: context,
+                    date: `Enregistré le ${today}`,
+                    votes: 0,
+                    timestamp: new Date().getTime() // Pour garder l'ordre chronologique
+                });
+
+                toggleDrawer(false);
+                document.getElementById('formText').value = "";
+                document.getElementById('formAuthor').value = "";
+                document.getElementById('formContext').value = "";
+            } catch (e) {
+                console.error("Erreur d'écriture Firebase: ", e);
+            }
+        }
+    </script>
+
+    <script>
+        // Fonctions UI simples hors module
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('drawer');
+            if (open) drawer.classList.remove('translate-x-full');
+            else drawer.classList.add('translate-x-full');
+        }
+        function toggleContext() {
+            document.getElementById('contextBox').classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
